@@ -4,16 +4,15 @@ var local = require('./lib/local');
 module.exports = function(app,mongoose){
   debug('entering users module');
 
-  var userSchema = mongoose.Schema({
-    username: String,
-    provider: String
-  });
+  require('./models/users')(mongoose);
 
-  var UserModel = mongoose.model('User',userSchema);
+  var UserModel = mongoose.model('User');
+  require('./config/passport')(app,UserModel);
 
-require('./config/passport')(app,UserModel);
+  var localStrategy = new local(UserModel);
+  app.post('/api/login',localStrategy.authenticate);
+  app.post('/api/signup',localStrategy.signUp);
+  app.post('/api/logout',localStrategy.logout);
 
-
-app.post('/api/login',local.authenticate);
-
+  this.localService = localStrategy;
 };
